@@ -37,7 +37,7 @@ pub contract LotteryPool {
 
     // query last winners' lottery ids
     // 
-    pub fun winnerIDs(_ label: String, _ batch: UInt32?): [String]
+    pub fun winnerIDs(_ label: String, _ batch: Int?): [String]
   }
 
   /// PoolController
@@ -79,7 +79,7 @@ pub contract LotteryPool {
   // Resources for Lottery Pool
   pub resource LotteryBox: PoolViewer, PoolController, LotteryDrawer {
     access(contract) let idsInPool: [String]
-    access(contract) let winners: {String: WinnerRecord}
+    access(contract) let winners: {String: [WinnerRecord]}
 
     // initialize the balance at resource creation time
     init() {
@@ -118,6 +118,7 @@ pub contract LotteryPool {
     // do a draw
     // 
     access(account) fun draw(label: String) {
+      // var winnerRecords: [WinnerRecord]
       // TODO
     }
 
@@ -139,13 +140,18 @@ pub contract LotteryPool {
       return idSlice
     }
 
-    pub fun winnerIDs(_ label: String, _ batch: UInt32?): [String] {
+    pub fun winnerIDs(_ label: String, _ batch: Int?): [String] {
       pre {
         self.winners[label] != nil : "missing winner label"
-        batch == nil || self.winners[label]?.batch == batch: "batch is not found in label"
+        batch == nil || self.winners[label] != nil : "batch is not found in label"
       }
 
-      return self.winners[label]?.ids!
+      let batchNum = batch ?? 0
+      let record = self.winners[label]!
+
+      assert(batchNum < record.length && batchNum >= 0, message: "Winner record does not have specified ID")
+
+      return record[batchNum].ids
     }
   }
 
