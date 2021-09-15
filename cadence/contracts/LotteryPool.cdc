@@ -56,7 +56,7 @@ pub contract LotteryPool {
   pub resource interface LotteryDrawer {
     // do a draw with a label
     // 
-    access(account) fun draw(label: String)
+    access(account) fun draw(label: String, amount: UInt)
   }
 
   // WinnerRecord
@@ -70,7 +70,7 @@ pub contract LotteryPool {
 
     // initializer
     //
-    init(batch: UInt32, ids: [String]) {
+    init(_ batch: UInt32, _ ids: [String]) {
         self.batch = batch
         self.ids = ids
     }
@@ -117,9 +117,55 @@ pub contract LotteryPool {
 
     // do a draw
     // 
-    access(account) fun draw(label: String) {
-      // var winnerRecords: [WinnerRecord]
-      // TODO
+    access(account) fun draw(label: String, amount: UInt) {
+      var winnerRecords: [WinnerRecord]? = self.winners[label]
+
+      // force setup
+      if winnerRecords == nil {
+        winnerRecords = []
+      }
+      
+      // genereate a random number
+      let blockHash = getCurrentBlock().id
+      let blockHashLen = UInt(blockHash.length)
+
+      fun pow (_ x: UInt, _ y: UInt): UInt64 {
+        if y == 0 {
+          return UInt64(x)
+        }
+        return UInt64(x) * pow(x, y - 1)
+      }
+
+      fun geneRandNumber (): UInt64 {
+        var randInt = unsafeRandom()
+        var i: UInt = 0
+        while i < 8 {
+          let currNum = blockHash[blockHashLen - i - 1]
+          randInt = randInt + pow(10, 8 as UInt - i) * UInt64(currNum)
+        }
+        return randInt
+      }
+
+      let totalLength = UInt64(self.idsInPool.length)
+
+      let ids: [String] = []
+      var cnt: UInt = 0
+      while cnt < amount {
+        let rand = geneRandNumber()
+        let picked = rand % totalLength
+        let pickedId = self.idsInPool[picked]
+        if !ids.contains(pickedId) {
+          ids.append(pickedId)
+          cnt = cnt + 1
+        }
+      }
+
+      let batch = UInt32(winnerRecords?.length! + 1)
+      let newRecord = WinnerRecord(batch, ids)
+
+      self.winners[label] = winnerRecords
+
+      emit LotteryDrawn(label: label, batch: batch, keys: ids)
     }
 
     pub fun lotteryIDs(_ page: UInt64?): [String] {
