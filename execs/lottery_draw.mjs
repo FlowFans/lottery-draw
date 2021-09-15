@@ -1,13 +1,14 @@
 import "./config" // Imports environment variables and configures FCL
 
-import * as fcl from "@onflow/fcl"
+import fcl from "@onflow/fcl"
+import t from "@onflow/types"
 
 async function sendTx() {
   const transaction = fs
     .readFileSync(
       path.join(
         __dirname,
-        `../cadence/transactions/lottery_ids_add.cdc`
+        `../cadence/transactions/do_lottery_draw.cdc`
       ),
       "utf8"
     )

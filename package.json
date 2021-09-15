@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "@onflow/fcl": "^0.0.76",
+    "@onflow/types": "^0.0.5",
+    "dotenv": "^10.0.0",
+    "dotenv-expand": "^5.1.0",
+    "elliptic": "^6.5.4",
+    "sha3": "^2.1.4"
+  }
+}
