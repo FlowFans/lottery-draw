@@ -23,6 +23,11 @@ pub contract LotteryPool {
   // The event that is emitted when lottery drawn
   pub event LotteryDrawn(label: String, batch: UInt32, keys:[String])
 
+  // Named paths
+  //
+  pub let LotteryStoragePath: StoragePath
+  pub let LotteryPrivatePath: PrivatePath
+
   /// PoolViewer
   ///
   pub resource interface PoolViewer {
@@ -32,7 +37,7 @@ pub contract LotteryPool {
 
     // query last winners' lottery ids
     // 
-    pub fun winnerIDs(_ label: String?, _ batch: UInt32?): [String]
+    pub fun winnerIDs(_ label: String, _ batch: UInt32?): [String]
   }
 
   /// PoolController
@@ -72,7 +77,7 @@ pub contract LotteryPool {
   }
 
   // Resources for Lottery Pool
-  pub resource EntityPool: PoolViewer, PoolController, LotteryDrawer {
+  pub resource LotteryBox: PoolViewer, PoolController, LotteryDrawer {
     access(contract) let idsInPool: [String]
     access(contract) let winners: {String: WinnerRecord}
 
@@ -134,14 +139,26 @@ pub contract LotteryPool {
       return idSlice
     }
 
-    pub fun winnerIDs(_ label: String?, _ batch: UInt32?): [String] {
-      // TODO
-      return []
+    pub fun winnerIDs(_ label: String, _ batch: UInt32?): [String] {
+      pre {
+        self.winners[label] != nil : "missing winner label"
+        batch == nil || self.winners[label]?.batch == batch: "batch is not found in label"
+      }
+
+      return self.winners[label]?.ids!
     }
   }
 
   // The init() function is required if the contract contains any fields.
   init() {
-      // self.greeting = "Hello, World!"
+    // Set our named paths.
+    self.LotteryStoragePath = /storage/LotteryBox
+    self.LotteryPrivatePath = /private/LotteryBox
+
+    let lottery <- create LotteryBox()
+    self.account.save(<-lottery, to: self.LotteryStoragePath)
+
+    // Emit event
+    emit ContractInitialized()
   }
 }
