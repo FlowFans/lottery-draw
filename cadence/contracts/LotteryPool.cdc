@@ -45,10 +45,10 @@ pub contract LotteryPool {
   pub resource interface PoolController {
     // add lottery ids
     // 
-    access(account) fun addLotteryIDs(keys: [String])
+    pub fun addLotteryIDs(keys: [String])
     // clear all lottery ids
     // 
-    access(account) fun clearLotteryIDs()
+    pub fun clearLotteryIDs()
   }
 
   /// LotteryDrawer
@@ -56,7 +56,7 @@ pub contract LotteryPool {
   pub resource interface LotteryDrawer {
     // do a draw with a label
     // 
-    access(account) fun draw(label: String, amount: UInt)
+    pub fun draw(label: String, amount: UInt)
   }
 
   // WinnerRecord
@@ -89,7 +89,7 @@ pub contract LotteryPool {
 
     // add lottery ids
     // 
-    access(account) fun addLotteryIDs(keys: [String]) {
+    pub fun addLotteryIDs(keys: [String]) {
       pre {
         keys.length > 0: "keys length should be not zero"
       }
@@ -106,7 +106,7 @@ pub contract LotteryPool {
 
     // clear all lottery ids
     // 
-    access(account) fun clearLotteryIDs() {
+    pub fun clearLotteryIDs() {
       while self.idsInPool.length > 0 {
         self.idsInPool.removeLast()
       }
@@ -117,7 +117,7 @@ pub contract LotteryPool {
 
     // do a draw
     // 
-    access(account) fun draw(label: String, amount: UInt) {
+    pub fun draw(label: String, amount: UInt) {
       var winnerRecords: [WinnerRecord]? = self.winners[label]
 
       // force setup
@@ -209,6 +209,11 @@ pub contract LotteryPool {
 
     let lottery <- create LotteryBox()
     self.account.save(<-lottery, to: self.LotteryStoragePath)
+
+    self.account.link<&LotteryBox{PoolController, LotteryDrawer}>(
+      self.LotteryPrivatePath,
+      target: self.LotteryStoragePath
+    )
 
     // Emit event
     emit ContractInitialized()
