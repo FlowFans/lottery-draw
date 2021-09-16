@@ -18,8 +18,10 @@ class FlowService {
   }
 
   authorizeMinter = () => {
+    console.log('Get:', this.minterFlowAddress)
     return async (account = {}) => {
       const user = await this.getAccount(this.minterFlowAddress);
+
       const key = user.keys[this.minterAccountIndex];
 
       const sign = this.signWithKey;
@@ -78,6 +80,7 @@ class FlowService {
       fcl.payer(payer),
       fcl.limit(9999),
     ]);
+    console.log('Tx Sent:', response)
     return await fcl.tx(response).onceSealed();
   };
 

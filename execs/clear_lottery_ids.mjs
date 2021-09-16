@@ -19,7 +19,7 @@ async function run() {
     .readFileSync(
       path.join(
         process.cwd(),
-        'cadence/transactions/lottery_ids_add.cdc'
+        'cadence/transactions/lottery_pool_clear.cdc'
       ),
       "utf8"
     )
@@ -27,9 +27,7 @@ async function run() {
   const authorization = flowService.authorizeMinter()
   await flowService.sendTx({
     transaction,
-    args: [
-      fcl.arg(['test'], t.Array(t.String)),
-    ],
+    args: [],
     proposer: authorization,
     authorizations: [authorization],
     payer: authorization

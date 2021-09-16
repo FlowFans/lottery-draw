@@ -38,7 +38,7 @@ pub contract LotteryPool {
 
     // query last winners' lottery ids
     // 
-    pub fun winnerIDs(_ label: String, _ batch: Int?): [String]
+    pub fun winnerIDs(_ label: String, _ batch: UInt?): [String]
   }
 
   /// PoolController
@@ -187,16 +187,16 @@ pub contract LotteryPool {
       return idSlice
     }
 
-    pub fun winnerIDs(_ label: String, _ batch: Int?): [String] {
+    pub fun winnerIDs(_ label: String, _ batch: UInt?): [String] {
       pre {
         self.winners[label] != nil : "missing winner label"
         batch == nil || self.winners[label] != nil : "batch is not found in label"
       }
 
-      let batchNum = batch ?? 0
+      let batchNum: UInt = batch ?? 0 as UInt
       let record = self.winners[label]!
 
-      assert(batchNum < record.length && batchNum >= 0, message: "Winner record does not have specified ID")
+      assert(batchNum < UInt(record.length) && batchNum >= 0, message: "Winner record does not have specified ID")
 
       return record[batchNum].ids
     }
@@ -205,9 +205,9 @@ pub contract LotteryPool {
   // The init() function is required if the contract contains any fields.
   init() {
     // Set our named paths.
-    self.LotteryStoragePath = /storage/LotteryBox
-    self.LotteryPrivatePath = /private/LotteryBox
-    self.LotteryPublicPath = /public/LotteryBox
+    self.LotteryStoragePath = /storage/LotteryBox1
+    self.LotteryPrivatePath = /private/LotteryBox1
+    self.LotteryPublicPath = /public/LotteryBox1
 
     let lottery <- create LotteryBox()
     self.account.save(<-lottery, to: self.LotteryStoragePath)

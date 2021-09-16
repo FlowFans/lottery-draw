@@ -15,8 +15,8 @@
 	},
 	"accounts": {
 		"emulator-account": {
-			"address": "f8d6e0586b0a20c7",
-			"key": "cda4ebb370186249b13677389f1c040a61af468b4c7ae5a357b38ca4ebb0dbf8"
+			"address": "${FLOW_ADDRESS}",
+			"key": "${FLOW_PRIVATE_KEY}"
 		},
 		"testnet-account": {
 			"address":"${FLOW_ADDRESS}", 

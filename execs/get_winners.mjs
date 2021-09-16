@@ -15,24 +15,22 @@ const flowService = new FlowService(
 const contractPath = '"../contracts/LotteryPool.cdc"';
 
 async function run() {
-  const transaction = fs
+  const script = fs
     .readFileSync(
       path.join(
         process.cwd(),
-        'cadence/transactions/lottery_ids_add.cdc'
+        'cadence/scripts/get_winners.cdc'
       ),
       "utf8"
     )
     .replace(contractPath, fcl.withPrefix(flowService.minterFlowAddress))
-  const authorization = flowService.authorizeMinter()
-  await flowService.sendTx({
-    transaction,
+  await flowService.executeScript({
+    script,
     args: [
-      fcl.arg(['test'], t.Array(t.String)),
-    ],
-    proposer: authorization,
-    authorizations: [authorization],
-    payer: authorization
+      fcl.arg(flowService.minterFlowAddress, t.Address),
+      fcl.arg('winner', t.String),
+      fcl.arg(0, t.UInt)
+    ]
   })
 }
 
