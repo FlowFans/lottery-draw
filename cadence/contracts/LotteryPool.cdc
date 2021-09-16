@@ -27,6 +27,7 @@ pub contract LotteryPool {
   //
   pub let LotteryStoragePath: StoragePath
   pub let LotteryPrivatePath: PrivatePath
+  pub let LotteryPublicPath: PublicPath
 
   /// PoolViewer
   ///
@@ -206,12 +207,17 @@ pub contract LotteryPool {
     // Set our named paths.
     self.LotteryStoragePath = /storage/LotteryBox
     self.LotteryPrivatePath = /private/LotteryBox
+    self.LotteryPublicPath = /public/LotteryBox
 
     let lottery <- create LotteryBox()
     self.account.save(<-lottery, to: self.LotteryStoragePath)
 
     self.account.link<&LotteryBox{PoolController, LotteryDrawer}>(
       self.LotteryPrivatePath,
+      target: self.LotteryStoragePath
+    )
+    self.account.link<&LotteryBox{PoolViewer}>(
+      self.LotteryPublicPath,
       target: self.LotteryStoragePath
     )
 
