@@ -1,31 +1,40 @@
-import "./config" // Imports environment variables and configures FCL
-
+import fs from 'fs'
+import path from 'path'
 import fcl from "@onflow/fcl"
 import t from "@onflow/types"
 
-async function sendTx() {
+import FlowService from './services/flow.mjs'
+import config from './deps/config.mjs'
+
+const flowService = new FlowService(
+  config.FLOW_ADDRESS,
+  config.FLOW_PRIVATE_KEY,
+  0
+)
+
+const contractPath = '"../contracts/LotteryPool.cdc"';
+
+async function run() {
   const transaction = fs
     .readFileSync(
       path.join(
-        __dirname,
-        `../cadence/transactions/do_lottery_draw.cdc`
+        process.cwd(),
+        'cadence/transactions/do_lottery_draw.cdc'
       ),
       "utf8"
     )
-
-  const txId = await fcl
-    .send([
-      fcl.proposer(fcl.currentUser().authorization), // current user acting as the nonce
-      fcl.authorizations([fcl.currentUser().authorization]), // current user will be first AuthAccount
-      fcl.payer(fcl.currentUser().authorization), // current user is responsible for paying for the transaction
-      fcl.limit(1000), // set the compute limit
-      fcl.transaction`
-        ${transaction}
-      `
-    ])
-    .then(fcl.decode)
-
-  return fcl.tx(txId).onceSealed()
+    .replace(contractPath, fcl.withPrefix(flowService.minterFlowAddress))
+  const authorization = flowService.authorizeMinter()
+  await flowService.sendTx({
+    transaction,
+    args: [
+      fcl.arg('test', t.String),
+      fcl.arg(1, t.UInt)
+    ],
+    proposer: authorization,
+    authorizations: [authorization],
+    payer: authorization
+  })
 }
 
-sendTx()
+run()

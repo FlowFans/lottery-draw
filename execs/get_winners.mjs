@@ -24,14 +24,15 @@ async function run() {
       "utf8"
     )
     .replace(contractPath, fcl.withPrefix(flowService.minterFlowAddress))
-  await flowService.executeScript({
+  const results = await flowService.executeScript({
     script,
     args: [
       fcl.arg(flowService.minterFlowAddress, t.Address),
-      fcl.arg('winner', t.String),
+      fcl.arg('test', t.String),
       fcl.arg(0, t.UInt)
     ]
   })
+  console.log('winners', results)
 }
 
 run()

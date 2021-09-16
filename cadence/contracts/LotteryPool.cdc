@@ -127,33 +127,13 @@ pub contract LotteryPool {
       }
       
       // genereate a random number
-      let blockHash = getCurrentBlock().id
-      let blockHashLen = UInt(blockHash.length)
-
-      fun pow (_ x: UInt, _ y: UInt): UInt64 {
-        if y == 0 {
-          return UInt64(x)
-        }
-        return UInt64(x) * pow(x, y - 1)
-      }
-
-      fun geneRandNumber (): UInt64 {
-        var randInt = unsafeRandom()
-        var i: UInt = 0
-        while i < 8 {
-          let currNum = blockHash[blockHashLen - i - 1]
-          randInt = randInt + pow(10, 8 as UInt - i) * UInt64(currNum)
-        }
-        return randInt
-      }
-
-      let totalLength = UInt64(self.idsInPool.length)
+      let totalLength = self.idsInPool.length
 
       let ids: [String] = []
       var cnt: UInt = 0
-      while cnt < amount {
-        let rand = geneRandNumber()
-        let picked = rand % totalLength
+      while cnt < amount && ids.length < totalLength {
+        let rand = unsafeRandom()
+        let picked = rand % UInt64(totalLength)
         let pickedId = self.idsInPool[picked]
         if !ids.contains(pickedId) {
           ids.append(pickedId)
@@ -163,6 +143,9 @@ pub contract LotteryPool {
 
       let batch = UInt32(winnerRecords?.length! + 1)
       let newRecord = WinnerRecord(batch, ids)
+
+      // add to record
+      winnerRecords?.append(newRecord)
 
       self.winners[label] = winnerRecords
 
@@ -189,14 +172,14 @@ pub contract LotteryPool {
 
     pub fun winnerIDs(_ label: String, _ batch: UInt?): [String] {
       pre {
-        self.winners[label] != nil : "missing winner label"
+        self.winners[label] != nil : "missing label"
         batch == nil || self.winners[label] != nil : "batch is not found in label"
       }
 
       let batchNum: UInt = batch ?? 0 as UInt
       let record = self.winners[label]!
 
-      assert(batchNum < UInt(record.length) && batchNum >= 0, message: "Winner record does not have specified ID")
+      assert(batchNum <= UInt(record.length) && batchNum >= 0, message: "Winner record does not have specified ID")
 
       return record[batchNum].ids
     }

@@ -1,6 +1,6 @@
 import LotteryPool from "../contracts/LotteryPool.cdc"
 
-transaction(ids: [String]) {
+transaction() {
     let lotteryBox: &LotteryPool.LotteryBox{LotteryPool.PoolController}
 
     prepare(signer: AuthAccount) {
