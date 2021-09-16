@@ -95,14 +95,18 @@ pub contract LotteryPool {
         keys.length > 0: "keys length should be not zero"
       }
 
+      let added: [String] = []
       for key in keys {
         if !self.idsInPool.contains(key) {
+          added.append(key)
           self.idsInPool.append(key)
         }
       }
 
-      // emit event
-      emit LotteryIDsAdded(keys)
+      if added.length > 0 {
+        // emit event
+        emit LotteryIDsAdded(added)
+      }
     }
 
     // clear all lottery ids

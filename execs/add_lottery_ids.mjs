@@ -24,16 +24,34 @@ async function run() {
       "utf8"
     )
     .replace(contractPath, fcl.withPrefix(flowService.minterFlowAddress))
+  
+  const idsList = JSON.parse(fs.readFileSync(
+    path.join(
+      process.cwd(),
+      config.DATA_ID_LIST_FILE
+    ),
+    "utf8"
+  ))
   const authorization = flowService.authorizeMinter()
-  await flowService.sendTx({
-    transaction,
-    args: [
-      fcl.arg(['test'], t.Array(t.String)),
-    ],
-    proposer: authorization,
-    authorizations: [authorization],
-    payer: authorization
-  })
+
+  const len = idsList.length
+  const cap = 100
+  let i = 0
+  while (i * cap < len) {
+    const from = i * cap
+    const ids = idsList.slice(from, from + cap)
+    // send tx
+    await flowService.sendTx({
+      transaction,
+      args: [
+        fcl.arg(ids, t.Array(t.String)),
+      ],
+      proposer: authorization,
+      authorizations: [authorization],
+      payer: authorization
+    })
+    i++
+  } // end while
 }
 
 run()
