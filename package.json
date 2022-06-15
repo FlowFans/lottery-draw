@@ -1,6 +1,7 @@
 {
   "dependencies": {
-    "@onflow/fcl": "^0.0.76",
+    "@onflow/fcl": "latest",
+    "@onflow/transport-grpc": "^1.0.1",
     "@onflow/types": "^0.0.5",
     "dotenv": "^10.0.0",
     "dotenv-expand": "^5.1.0",
