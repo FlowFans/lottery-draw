@@ -123,37 +123,38 @@ pub contract LotteryPool {
     // do a draw
     // 
     pub fun draw(label: String, amount: UInt) {
-      var winnerRecords: [WinnerRecord]? = self.winners[label]
-
-      // force setup
-      if winnerRecords == nil {
-        winnerRecords = []
-      }
+      let winnerRecords: [WinnerRecord] = self.winners[label] ?? []
       
       // genereate a random number
       let totalLength = self.idsInPool.length
 
-      let ids: [String] = []
+      var existIds: [String] = []
+      for oldRecord in winnerRecords {
+        existIds = existIds.concat(oldRecord.ids)
+      }
+
+      let pickedIds: [String] = []
       var cnt: UInt = 0
-      while cnt < amount && ids.length < totalLength {
+      while cnt < amount && existIds.length < totalLength {
         let rand = unsafeRandom()
         let picked = rand % UInt64(totalLength)
         let pickedId = self.idsInPool[picked]
-        if !ids.contains(pickedId) {
-          ids.append(pickedId)
+        if !existIds.contains(pickedId) {
+          existIds.append(pickedId)
+          pickedIds.append(pickedId)
           cnt = cnt + 1
         }
       }
 
-      let batch = UInt32(winnerRecords?.length! + 1)
-      let newRecord = WinnerRecord(batch, ids)
+      let batch = UInt32(winnerRecords.length + 1)
+      let newRecord = WinnerRecord(batch, pickedIds)
 
       // add to record
-      winnerRecords?.append(newRecord)
+      winnerRecords.append(newRecord)
 
       self.winners[label] = winnerRecords
 
-      emit LotteryDrawn(label: label, batch: batch, keys: ids)
+      emit LotteryDrawn(label: label, batch: batch, keys: pickedIds)
     }
 
     pub fun lotteryIDs(_ page: UInt64?): [String] {
